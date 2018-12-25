@@ -2,7 +2,6 @@ import Vec from "./Vec.js";
 
 const MAX_SPEED = 60;
 const MOUSE = 100;
-const CENTRE = 0.00001;
 
 const MOUSE_REPEL = true;
 
@@ -11,12 +10,21 @@ const MOUSE_REPEL = true;
 // const COHESION = 0.04;
 // const ALIGNMENT = 0.04;
 // const SEPARATION = 0.3;
+// const CONTAINER = 2;
 
 // Preset 2
-const VISSPHERE = 30;
-const COHESION = 0.3;
-const ALIGNMENT = 0.2;
-const SEPARATION = 0.9;
+// const VISSPHERE = 30;
+// const COHESION = 0.3;
+// const ALIGNMENT = 0.2;
+// const SEPARATION = 0.9;
+// const CONTAINER = 2;
+
+// Preset 3
+const VISSPHERE = 60;
+const COHESION = 0.07;
+const ALIGNMENT = 0.09;
+const SEPARATION = 0.2;
+const CONTAINER = 0.25;
 
 export default class BoidSimulator {
 	constructor(boids, width, height) {
@@ -76,17 +84,17 @@ export default class BoidSimulator {
 						.mul(MOUSE)
 				: new Vec();
 
-			const centreAttraction = compCentreAttraction(
+			const windowContainerAttraction = compWindowContainerAttraction(
 				boid,
 				this.width,
 				this.height
 			)
 				.mul(1 / timeStep)
-				.mul(CENTRE);
+				.mul(CONTAINER);
 
 			bAcc[boidI] = boidAcceleration
 				.add(mouseRepelAcc)
-				.add(centreAttraction);
+				.add(windowContainerAttraction);
 		}
 
 		// Update velocity for each boid
@@ -130,6 +138,25 @@ function compMouseRepel(boid, mouseIn, mousePos) {
 	} else {
 		return new Vec();
 	}
+}
+
+function compWindowContainerAttraction(boid, width, height) {
+	const THRESHOLD = 100;
+
+	const force = new Vec();
+	if (boid.pos.x < THRESHOLD) {
+		force.x = 1;
+	} else if (boid.pos.x > width - THRESHOLD) {
+		force.x = -1;
+	}
+
+	if (boid.pos.y < THRESHOLD) {
+		force.y = 1;
+	} else if (boid.pos.y > height - THRESHOLD) {
+		force.y = -1;
+	}
+
+	return force;
 }
 
 function compCentreAttraction(boid, width, height) {

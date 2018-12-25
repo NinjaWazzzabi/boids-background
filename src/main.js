@@ -10,7 +10,7 @@ let height;
 
 let boidSim;
 
-const SIZE = 100;
+const SIZE = 250;
 const TIMESTEP = 0.1;
 
 function addEvent(obj, evt, fn) {
