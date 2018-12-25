@@ -10,7 +10,7 @@ let height;
 
 let boidSim;
 
-const SIZE = 250;
+const SIZE = 100;
 const TIMESTEP = 0.1;
 
 function addEvent(obj, evt, fn) {
@@ -35,7 +35,7 @@ function onLoad() {
 	ctx.fillStyle = "black";
 	ctx.fillRect(0, 0, width, height);
 
-	const tmpBoids = generateBoids(SIZE, width / 2, 40, width / 4, height / 4);
+	const tmpBoids = generateBoids(SIZE, width / 4, 10, width / 3, height / 3);
 	boidSim = new BoidSimulator(tmpBoids, width, height);
 
 	addEvent(document, "mouseout", function(e) {

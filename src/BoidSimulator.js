@@ -1,19 +1,22 @@
 import Vec from "./Vec.js";
 
 const MAX_SPEED = 60;
-const VISSPHERE = 60;
-const MOUSE = 0.00001;
+const MOUSE = 100;
+const CENTRE = 0.00001;
 
-const FOLLOW_MOUSE = false;
+const MOUSE_REPEL = true;
 
-const COHESION = 0.04;
-const ALIGNMENT = 0.04;
-const SEPARATION = 0.3;
+// Preset 1
+// const VISSPHERE = 60;
+// const COHESION = 0.04;
+// const ALIGNMENT = 0.04;
+// const SEPARATION = 0.3;
 
-// const VISSPHERE = 30;
-// const COHESION = 0.3;
-// const ALIGNMENT = 0.2;
-// const SEPARATION = 0.9;
+// Preset 2
+const VISSPHERE = 30;
+const COHESION = 0.3;
+const ALIGNMENT = 0.2;
+const SEPARATION = 0.9;
 
 export default class BoidSimulator {
 	constructor(boids, width, height) {
@@ -62,20 +65,28 @@ export default class BoidSimulator {
 				.mul(SEPARATION)
 				.mul(1 / (timeStep * timeStep));
 
-			const acc = cohesion
+			const boidAcceleration = cohesion
 				.add(alignment)
 				.add(separation)
 				.mul(timeStep);
 
-			const mouseMove = compMouse(
+			const mouseRepelAcc = MOUSE_REPEL
+				? compMouseRepel(boid, this.mouseIn, this.mousePos)
+						.mul(1 / timeStep)
+						.mul(MOUSE)
+				: new Vec();
+
+			const centreAttraction = compCentreAttraction(
 				boid,
-				this.mouseIn,
-				this.mousePos,
 				this.width,
 				this.height
-			).mul(MOUSE);
+			)
+				.mul(1 / timeStep)
+				.mul(CENTRE);
 
-			bAcc[boidI] = acc.add(mouseMove);
+			bAcc[boidI] = boidAcceleration
+				.add(mouseRepelAcc)
+				.add(centreAttraction);
 		}
 
 		// Update velocity for each boid
@@ -112,13 +123,18 @@ function compCohesion(boid, boids) {
 	}
 }
 
-function compMouse(boid, mouseIn, mousePos, width, height) {
-	if (mouseIn && FOLLOW_MOUSE) {
-		return mousePos.sub(boid.pos).mul(boid.pos.distTo(mousePos));
+function compMouseRepel(boid, mouseIn, mousePos) {
+	if (mouseIn) {
+		const distance = mousePos.distTo(boid.pos);
+		return boid.pos.sub(mousePos).mul(1 / distance ** 2.4);
 	} else {
-		const middle = new Vec(width / 2, height / 2);
-		return middle.sub(boid.pos).mul(boid.pos.distTo(middle));
+		return new Vec();
 	}
+}
+
+function compCentreAttraction(boid, width, height) {
+	const middle = new Vec(width / 2, height / 2);
+	return middle.sub(boid.pos).mul(boid.pos.distTo(middle));
 }
 
 function compAlignment(boid, boids) {
